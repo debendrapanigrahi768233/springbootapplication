@@ -2,7 +2,9 @@ package com.deb.springWebMvc.springWebMvc.controllers;
 
 import com.deb.springWebMvc.springWebMvc.dto.EmployeeDTO;
 import com.deb.springWebMvc.springWebMvc.entities.EmployeeEntity;
+import com.deb.springWebMvc.springWebMvc.exceptions.ResourceNotFoundException;
 import com.deb.springWebMvc.springWebMvc.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,7 @@ public class  EmployeeController {
     @GetMapping(path= "/{employeeID}")
     public ResponseEntity<EmployeeDTO> getEmployeeByID(@PathVariable(name = "employeeID") Long id){
         Optional<EmployeeDTO> em = employeeService.getEmployeeByID(id);
-        return em.map(employee -> ResponseEntity.ok(employee)).orElse(ResponseEntity.notFound().build());
+        return em.map(employee -> ResponseEntity.ok(employee)).orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
     }
 
     @GetMapping(path= "")
@@ -41,13 +43,13 @@ public class  EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO inputEmployee){
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid EmployeeDTO inputEmployee){
         EmployeeDTO em = employeeService.createEmployee(inputEmployee);
         return new ResponseEntity<>(em, HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{employeeID}")
-    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody EmployeeDTO newEmployeeDetails, @PathVariable(name="employeeID") Long Id){
+    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody @Valid EmployeeDTO newEmployeeDetails, @PathVariable(name="employeeID") Long Id){
         return ResponseEntity.ok(employeeService.updateEmployeeById(newEmployeeDetails, Id));
     }
 

@@ -2,6 +2,7 @@ package com.deb.springWebMvc.springWebMvc.services;
 
 import com.deb.springWebMvc.springWebMvc.dto.EmployeeDTO;
 import com.deb.springWebMvc.springWebMvc.entities.EmployeeEntity;
+import com.deb.springWebMvc.springWebMvc.exceptions.ResourceNotFoundException;
 import com.deb.springWebMvc.springWebMvc.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class EmployeeService {
     }
 
     public EmployeeDTO updateEmployeeById(EmployeeDTO newEmployeeDetails, Long employeeId){
+        isExistsById(employeeId);
         EmployeeEntity em = modelMapper.map(newEmployeeDetails, EmployeeEntity.class);
         em.setId(employeeId);
         EmployeeEntity newEm = employeeRepository.save(em);
@@ -49,15 +51,18 @@ public class EmployeeService {
     }
 
     public boolean deleteEmployeeById(Long id) {
-        boolean exists = employeeRepository.existsById(id);
-        if(!exists)return false;
+        isExistsById(id);
         employeeRepository.deleteById(id);
         return true;
     }
 
+    public void isExistsById(Long id){
+         boolean exists = employeeRepository.existsById(id)   ;
+        if(!exists) throw new ResourceNotFoundException("Employee not found with id: "+ id);
+    }
+
     public EmployeeDTO updatePartialEmployeeDetailsById(Map<String, Object> newEmployeeDetails, Long id) {
-        boolean exists = employeeRepository.existsById(id);
-        if(!exists)return null;
+        isExistsById(id);
         EmployeeEntity em=  employeeRepository.findById(id).orElse(null);
         newEmployeeDetails.forEach((key,value)->{
             Field fieldToBeUpdated = ReflectionUtils.findField(EmployeeEntity.class, key);
